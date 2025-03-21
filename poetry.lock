@@ -41,7 +41,7 @@ sqlalchemy = "*"
 
 [package.source]
 type = "git"
-url = "ssh://git@github.com/WRLC/barcodecheck_models.git"
+url = "https://github.com/WRLC/barcodecheck_models.git"
 reference = "HEAD"
 resolved_reference = "36d8da3631f025b4653c501e460ca7c14b4ef742"
 
@@ -827,4 +827,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "77df3108b3213fdd0187c59b5c9e29f9208157bde30f0f5e9af11114c576e8a0"
+content-hash = "0b16ebbab6ec9b5f271c4a1d85cec90aed335244df143118200fa9a1a4f5db10"
