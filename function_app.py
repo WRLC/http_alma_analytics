@@ -42,9 +42,8 @@ def httpalmaanalytics(req: func.HttpRequest) -> func.HttpResponse:
         return soup
 
     columns = get_columns(soup)  # Get the columns from the XML response
-    if isinstance(columns, func.HttpResponse):
-        return columns
-
+    if not columns:
+        columns = req.get_json().get('columns')  # Get columns from request body if not found in XML
     rows = get_rows(soup, columns)  # Get the rows from the XML response
     if isinstance(rows, func.HttpResponse):
         return rows
@@ -57,7 +56,8 @@ def httpalmaanalytics(req: func.HttpRequest) -> func.HttpResponse:
                 'status': 'success',
                 'data': {
                     'resume': resume_data.text if resume_data else None,
-                    'rows': rows
+                    'columns': columns,
+                    'rows': rows,
                 },
             }
         ),
@@ -122,17 +122,24 @@ def set_payload(req: func.HttpRequest) -> str | func.HttpResponse:
     # Resume token
     resume: Any | None = req_body.get('resume') if 'resume' in req_body else None  # Get resume token
 
+    logging.info("Resume token: %s", resume)  # Log the resume token
+
+    payload_dict = {
+        "path": iz_analysis.path,  # report path
+        "apikey": apikey.apikey,  # API key
+        'limit': '1000',  # limit (max 1000)
+        'col_names': 'true'  # include column names
+    }
+
+    if resume:
+        payload_dict['token'] = resume  # resume token, if provided
+
     payload = urllib.parse.urlencode(
-        {
-            "path": iz_analysis.path,  # report path
-            "apikey": apikey.apikey,  # API key
-            'limit': '1000',  # limit (max 1000)
-            'col_names': 'true'  # include column names
-        },
+        payload_dict,
         safe=':%'  # noqa: WPS432
     )
-    if resume:
-        payload += f"&token={resume}"
+
+    logging.info("Payload: %s", payload)  # Log the payload
 
     return payload
 
@@ -175,7 +182,7 @@ def get_soup(response: requests.Response) -> BeautifulSoup | func.HttpResponse:
     return soup
 
 
-def get_columns(soup: BeautifulSoup) -> dict[str, str] | func.HttpResponse:  # type:ignore[valid-type]
+def get_columns(soup: BeautifulSoup) -> dict[str, str] | None:  # type:ignore[valid-type]
     """
     Get the data rows from the report
 
@@ -185,8 +192,7 @@ def get_columns(soup: BeautifulSoup) -> dict[str, str] | func.HttpResponse:  # t
     columnlist: Any = soup.find_all('xsd:element')  # Get the columns from the XML response
 
     if not columnlist:
-        logging.error('No columns found')  # Log error
-        return func.HttpResponse("No columns found", status_code=404)
+        return None  # type:ignore[return-value] # Return None if no columns found
 
     columns = {}  # Create a dictionary of columns
 
@@ -198,7 +204,7 @@ def get_columns(soup: BeautifulSoup) -> dict[str, str] | func.HttpResponse:  # t
     return columns  # type: ignore # Return the dictionary of columns
 
 
-def get_rows(soup: BeautifulSoup, columns: dict[str, str]) -> list[dict[str, str]] | func.HttpResponse:
+def get_rows(soup: BeautifulSoup, columns: dict[str, str] | None) -> list[dict[str, str]] | func.HttpResponse:
     """
     Get the data rows from the report
 
@@ -219,6 +225,9 @@ def get_rows(soup: BeautifulSoup, columns: dict[str, str]) -> list[dict[str, str
         kids = value.findChildren()  # type:ignore[union-attr] # Get the children of the row
 
         for kid in kids:  # Iterate through the children
+            if not columns:
+                values[kid.name] = kid.text
+                continue
             if kid.name != 'Column0':  # Skip the first column
                 if kid.name in columns:  # Use the column heading as the key
                     values[columns[kid.name]] = kid.text  # Add the child to the dictionary
