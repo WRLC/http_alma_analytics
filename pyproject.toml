@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "alma-analytics-api-call"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+azure-functions = "^1.21.3"
+barcodecheck-models = {git = "ssh://git@github.com/WRLC/barcodecheck_models.git"}
+requests = "^2.32.3"
+beautifulsoup4 = "^4.13.3"
+python-dotenv = "^1.0.1"
+pymysql = "^1.1.1"
+lxml = "^5.3.1"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.15.0"
+flake8 = "^7.1.2"
+pylint = "^3.3.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

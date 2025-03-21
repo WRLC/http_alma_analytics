@@ -1,0 +1,15 @@
+.venv
+.vscode
+__blobstorage__
+__queuestorage__
+__azurite_db*__.json
+.env
+.DS_Store
+.idea
+.flake8
+.gitignore
+.pylintrc
+local.settings.json
+poetry.lock
+pyproject.toml
+README.md
