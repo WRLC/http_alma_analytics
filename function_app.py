@@ -28,27 +28,33 @@ def httpalmaanalytics(req: func.HttpRequest) -> func.HttpResponse:
     :param req:
     :return: func.HttpResponse
     """
-    # API call to Alma Analytics
     payload = set_payload(req)  # Set the payload for the API call
+
     if isinstance(payload, func.HttpResponse):
         return payload
 
     response = make_api_call(payload=payload)  # Make API call
+
     if isinstance(response, func.HttpResponse):
         return response
 
     soup = get_soup(response)  # Parse the XML response
+
     if isinstance(soup, func.HttpResponse):
         return soup
 
     columns = get_columns(soup)  # Get the columns from the XML response
+
     if not columns:
         columns = req.get_json().get('columns')  # Get columns from request body if not found in XML
+
     rows = get_rows(soup, columns)  # Get the rows from the XML response
+
     if isinstance(rows, func.HttpResponse):
         return rows
 
     resume_data: Any = soup.find('ResumptionToken')  # Get the resume token
+    is_finished = soup.find('IsFinished')  # Check if the report is finished
 
     return func.HttpResponse(  # Return the response
         json.dumps(
@@ -56,6 +62,7 @@ def httpalmaanalytics(req: func.HttpRequest) -> func.HttpResponse:
                 'status': 'success',
                 'data': {
                     'resume': resume_data.text if resume_data else None,
+                    'is_finished': is_finished.text if is_finished else None,
                     'columns': columns,
                     'rows': rows,
                 },
@@ -125,7 +132,6 @@ def set_payload(req: func.HttpRequest) -> str | func.HttpResponse:
     logging.info("Resume token: %s", resume)  # Log the resume token
 
     payload_dict = {
-        "path": iz_analysis.path,  # report path
         "apikey": apikey.apikey,  # API key
         'limit': '1000',  # limit (max 1000)
         'col_names': 'true'  # include column names
@@ -133,6 +139,9 @@ def set_payload(req: func.HttpRequest) -> str | func.HttpResponse:
 
     if resume:
         payload_dict['token'] = resume  # resume token, if provided
+
+    if not resume:
+        payload_dict['path'] = iz_analysis.path  # otherwise report path
 
     payload = urllib.parse.urlencode(
         payload_dict,
