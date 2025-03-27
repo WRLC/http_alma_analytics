@@ -130,8 +130,6 @@ def set_payload(req: func.HttpRequest) -> str | func.HttpResponse:
     # Resume token
     resume: Any | None = req_body.get('resume') if 'resume' in req_body else None  # Get resume token
 
-    logging.info("Resume token: %s", resume)  # Log the resume token
-
     payload_dict = {
         "apikey": apikey.apikey,  # API key
         'limit': '1000',  # limit (max 1000)
@@ -148,8 +146,6 @@ def set_payload(req: func.HttpRequest) -> str | func.HttpResponse:
         payload_dict,
         safe=':%'  # noqa: WPS432
     )
-
-    logging.info("Payload: %s", payload)  # Log the payload
 
     return payload
 
