@@ -1,6 +1,6 @@
 astroid==3.3.9
 azure-functions==1.21.3
-barcodecheck_models @ git+https://github.com/WRLC/barcodecheck_models.git@36d8da3631f025b4653c501e460ca7c14b4ef742
+barcodecheck_models @ git+https://github.com/WRLC/barcodecheck_models.git@0af25e1fcbd9c5072c259ed4b6cdbc02043f1cb0
 beautifulsoup4==4.13.3
 certifi==2025.1.31
 charset-normalizer==3.4.1
