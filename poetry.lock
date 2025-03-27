@@ -43,7 +43,7 @@ sqlalchemy = "*"
 type = "git"
 url = "https://github.com/WRLC/barcodecheck_models.git"
 reference = "HEAD"
-resolved_reference = "36d8da3631f025b4653c501e460ca7c14b4ef742"
+resolved_reference = "0af25e1fcbd9c5072c259ed4b6cdbc02043f1cb0"
 
 [[package]]
 name = "beautifulsoup4"

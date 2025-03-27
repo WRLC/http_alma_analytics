@@ -5,6 +5,7 @@ import json
 import logging
 from typing import Any
 import urllib.parse
+# noinspection PyPackageRequirements
 import azure.functions as func
 from bs4 import BeautifulSoup  # type:ignore[import-untyped]
 from dotenv import load_dotenv
@@ -46,7 +47,7 @@ def httpalmaanalytics(req: func.HttpRequest) -> func.HttpResponse:
     columns = get_columns(soup)  # Get the columns from the XML response
 
     if not columns:
-        columns = req.get_json().get('columns')  # Get columns from request body if not found in XML
+        columns = req.get_json()['columns']  # Get columns from request body if not found in XML
 
     rows = get_rows(soup, columns)  # Get the rows from the XML response
 
@@ -234,14 +235,13 @@ def get_rows(soup: BeautifulSoup, columns: dict[str, str] | None) -> list[dict[s
         kids = value.findChildren()  # type:ignore[union-attr] # Get the children of the row
 
         for kid in kids:  # Iterate through the children
-            if not columns:
-                values[kid.name] = kid.text
-                continue
-            if kid.name != 'Column0':  # Skip the first column
+            if columns:
                 if kid.name in columns:  # Use the column heading as the key
                     values[columns[kid.name]] = kid.text  # Add the child to the dictionary
                 else:
                     values[kid.name] = kid.text  # Fallback to the original name if not in mapping
+            else:
+                values[kid.name] = kid.text
 
         rows.append(values)  # Add the dictionary to the list
 
